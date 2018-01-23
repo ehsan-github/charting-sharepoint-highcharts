@@ -1,11 +1,11 @@
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
 
-let container = document.createElement('div');
-container.setAttribute('id','chartcontainer')
+// let container = document.createElement('div');
+// container.setAttribute('id','chartcontainer')
 
-let app = document.getElementById('app');
-app.appendChild(container);
+// let app = document.getElementById('app');
+// app.appendChild(container);
 
 Exporting(Highcharts);
 
