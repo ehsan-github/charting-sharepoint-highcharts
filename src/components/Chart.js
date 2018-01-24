@@ -1,16 +1,16 @@
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
 
-// let container = document.createElement('div');
-// container.setAttribute('id','chartcontainer')
-
-// let app = document.getElementById('app');
-// app.appendChild(container);
-
 Exporting(Highcharts);
 
-export function chart(){
-    let Chart = Highcharts.chart('chartcontainer', {
+export function chart(app, chartId){
+
+    let chartcontainer = document.createElement('div');
+    chartcontainer.setAttribute('id', chartId);
+
+    app.appendChild(chartcontainer);
+
+    let Chart = Highcharts.chart(chartId, {
         title: {
             text: 'Solar Employment Growth by Sector, 2010-2016'
         },

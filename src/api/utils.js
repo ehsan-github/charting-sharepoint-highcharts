@@ -1,6 +1,6 @@
 // @flow
-import R from 'ramda'
-import { Future } from 'ramda-fantasy'
+import * as R from 'ramda';
+import { Future } from 'ramda-fantasy';
 
 // General fetch future
 
