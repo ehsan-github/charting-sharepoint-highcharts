@@ -1,24 +1,36 @@
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
+import * as R from 'ramda'
+
+import { setTitle, setSubTitle } from './staticProps'
 
 Exporting(Highcharts);
 
-export function chart(app, chartId, series){
+export default function buildChart(app, series){
 
     let chartcontainer = document.createElement('div');
+    const chartId = 'chartcontainer'
     chartcontainer.setAttribute('id', chartId);
 
     app.appendChild(chartcontainer);
 
-    let Chart = Highcharts.chart(chartId, {
-        title: {
-            text: 'Solar Employment Growth by Sector, 2010-2016'
-        },
+    // set different chart props
+    let title = setTitle('Solar Employment Growth by Sector, 2010-2016');
 
-        subtitle: {
-            text: 'Source: thesolarfoundation.com'
-        },
+    let subTitle = setSubTitle('Source: thesolarfoundation.com');
 
+    if (series.length == 0) {
+        series = {
+            series: [{
+                name: 'Tokyo',
+                data: [7.0, 6.9, 9.5, 14.5, 18.4, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
+            }, {
+                name: 'London',
+                data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
+            }]
+        };
+    }
+    let remaining = {
         yAxis: {
             title: {
                 text: 'Number of Employees'
@@ -39,8 +51,6 @@ export function chart(app, chartId, series){
         //     }
         // },
 
-        series,
-
         responsive: {
             rules: [{
                 condition: {
@@ -56,6 +66,11 @@ export function chart(app, chartId, series){
             }]
         }
 
-    });
-    return Chart
+    }
+
+    // merge all chat props together
+
+    let chartProps = R.mergeAll([title, subTitle, series, remaining])
+
+    return Highcharts.chart(chartId, chartProps)
 }

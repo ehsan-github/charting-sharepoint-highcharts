@@ -3,7 +3,7 @@ import update from '../updates'
 
 import Elem from '../elements/Element'
 
-export default function GetData(app, chart){
+export default function GetData(parent, chart){
     let div = Elem({ type: 'div' });
     let listId = '';
 
@@ -22,11 +22,13 @@ export default function GetData(app, chart){
         getItems(listId)
             .fork(
                 err     => console.log('addError', err),
-                options => console.log('loadOptions', options)
+                items   => {
+                    parent.setItems(items)
+                }
             );
     };
 
     update(chart, {});
 
-    app.appendChild(div);
+    parent.appendChild(div);
 }
