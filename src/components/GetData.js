@@ -1,9 +1,8 @@
 import { getItems } from '../api';
-import update from '../updates'
 
-import Elem from '../elements/Element'
+import Elem from '../elements/Element';
 
-export default function GetData(parent, chart){
+export default function GetData(parent){
     let div = Elem({ type: 'div' });
     let listId = '';
 
@@ -21,14 +20,12 @@ export default function GetData(parent, chart){
     fetchButton.onclick = () => {
         getItems(listId)
             .fork(
-                err     => console.log('addError', err),
+                err     => alert('addError', err),
                 items   => {
-                    parent.setItems(items)
+                    parent.setItems(items);
                 }
             );
     };
-
-    update(chart, {});
 
     parent.appendChild(div);
 }

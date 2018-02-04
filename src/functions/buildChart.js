@@ -6,7 +6,7 @@ import { setTitle, setSubTitle } from './staticProps'
 
 Exporting(Highcharts);
 
-export default function buildChart(app, series){
+export default function buildChart(app, series, ...x){
 
     let chartcontainer = document.createElement('div');
     const chartId = 'chartcontainer'
@@ -31,10 +31,12 @@ export default function buildChart(app, series){
         };
     }
     let remaining = {
+        chart: { type: 'bar' },
         yAxis: {
             title: {
-                text: 'Number of Employees'
-            }
+                text: 'هزینه پروژه'
+            },
+            reversed: false
         },
         legend: {
             layout: 'vertical',
@@ -70,7 +72,7 @@ export default function buildChart(app, series){
 
     // merge all chat props together
 
-    let chartProps = R.mergeAll([title, subTitle, series, remaining])
+    let chartProps = R.mergeAll([title, subTitle, series, remaining, ...x])
 
     return Highcharts.chart(chartId, chartProps)
 }
