@@ -1,15 +1,16 @@
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
-import * as R from 'ramda'
+import * as R from 'ramda';
 
-import { setTitle, setSubTitle } from './staticProps'
+import { setTitle, setSubTitle } from './staticProps';
+import { buildTooltip } from './dynamicProps';
 
 Exporting(Highcharts);
 
 export default function buildChart(app, series, ...x){
 
     let chartcontainer = document.createElement('div');
-    const chartId = 'chartcontainer'
+    const chartId = 'chartcontainer';
     chartcontainer.setAttribute('id', chartId);
 
     app.appendChild(chartcontainer);
@@ -18,6 +19,9 @@ export default function buildChart(app, series, ...x){
     let title = setTitle('Solar Employment Growth by Sector, 2010-2016');
 
     let subTitle = setSubTitle('Source: thesolarfoundation.com');
+
+    let tooltip = buildTooltip('line', {})();
+    console.log(tooltip)
 
     if (series.length == 0) {
         series = {
@@ -72,7 +76,7 @@ export default function buildChart(app, series, ...x){
 
     // merge all chat props together
 
-    let chartProps = R.mergeAll([title, subTitle, series, remaining, ...x])
+    let chartProps = R.mergeAll([title, subTitle, tooltip, series, remaining, ...x])
 
     return Highcharts.chart(chartId, chartProps)
 }
