@@ -59,13 +59,14 @@ export default function PageContent(parentId){
 const buildFilters = R.map(x => { return { name: x, value: 'همه' }; });
 
 const buildChartData = (legend, filters, yAxis, data) => R.pipe(
+    R.reduce(
+        (acc, { name, value }) => {
+            if (!isNaN(value)) value = Number(value);
+            return value == 'همه' ? acc : R.filter(R.propEq(name, value), acc);
+        },
+        R.__,
+        filters),
     R.groupBy(R.prop(legend)),
-    R.map(                             // apply all filters over each Group
-        row => R.reduce(
-            (acc, { name, value }) => value == 'همه' ? acc : R.filter(R.propEq(name, value), acc),
-            row,
-            filters)),
-    R.reject(x => R.length(x) == 0),
     R.mapObjIndexed((rows, key) => {   // select yAxis from each Group
         return {
             name: key,
