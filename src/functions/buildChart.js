@@ -21,7 +21,6 @@ export default function buildChart(app, series, ...x){
     let subTitle = setSubTitle('Source: thesolarfoundation.com');
 
     let tooltip = buildTooltip('line', {})();
-    console.log(tooltip)
 
     if (series.length == 0) {
         series = {
