@@ -1,0 +1,44 @@
+html, body {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  font-family: yekanRegular;
+}
+
+@font-face {
+    font-family: 'yekanRegular';
+    src: 	url('./fonts/Yekan.eot?#') format('eot'),
+		url('./fonts/Yekan.woff') format('woff'),
+		url('./fonts/Yekan.ttf') format('truetype');
+}
+
+/* remove Highcharts logo */
+text.highcharts-credits {
+    display: none;
+}
+
+.filters-box {
+    text-align: center;
+    padding: 20px;
+}
+
+.filter {
+    border: 1px solid;
+    border-color: #e0e0e0;
+    border-radius: 3px;
+    display: inline-block;
+    padding: 10px;
+    margin: 0px 5px;
+}
+
+.filter select {
+    min-width: 100px;
+    direction: rtl;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.filter span {
+    padding: 0px 10px 5px 20px;
+    float: right;
+}
