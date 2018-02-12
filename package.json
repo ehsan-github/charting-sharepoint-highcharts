@@ -25,6 +25,7 @@
   "homepage": "https://github.com/ehsanheydariyk/charting-sharepoint-highcharts#readme",
   "dependencies": {
     "highcharts": "^6.0.4",
+    "highcharts-more": "^0.1.7",
     "jquery": "^3.3.1",
     "ramda": "^0.25.0",
     "ramda-fantasy": "^0.8.0"

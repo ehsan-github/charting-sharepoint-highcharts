@@ -1,11 +1,13 @@
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
+import HighchartsMore from 'highcharts-more';
 import * as R from 'ramda';
 
 import { setTitle, setSubTitle } from './staticProps';
 import { buildTooltip } from './dynamicProps';
 
 Exporting(Highcharts);
+HighchartsMore(Highcharts);
 
 export default function buildChart(app, type, series, ...x){
 
@@ -14,6 +16,12 @@ export default function buildChart(app, type, series, ...x){
     chartcontainer.setAttribute('id', chartId);
 
     app.appendChild(chartcontainer);
+    // type
+    let polar = false;
+    if (type == 'spiderweb'){
+        polar = true;
+        type = 'line';
+    }
 
     // set different chart props
     let title = setTitle(window.TITLE || 'Solar Employment Growth by Sector, 2010-2016');
@@ -32,11 +40,17 @@ export default function buildChart(app, type, series, ...x){
         };
     }
     let remaining = {
-        chart: { type },
+        chart: { polar, type },
+        pane: {
+            size: '80%'
+        },
         yAxis: {
             title: {
                 text: yAxis
             },
+            gridLineInterpolation: 'polygon',
+            lineWidth: 0,
+            min: 0,
             reversed: false
         },
         legend: {
@@ -69,11 +83,11 @@ export default function buildChart(app, type, series, ...x){
             }]
         }
 
-    }
+    };
 
     // merge all chat props together
 
-    let chartProps = R.mergeAll([title, subTitle, tooltip, series, remaining, ...x])
+    let chartProps = R.mergeAll([title, subTitle, tooltip, series, remaining, ...x]);
 
     ///setting global options
     Highcharts.setOptions({
@@ -94,10 +108,9 @@ export default function buildChart(app, type, series, ...x){
             printChart: 'Print chart',
             resetZoom: 'Reset zoom',
             resetZoomTitle: 'Reset zoom level 1:1',
-            shortMonths:[ 'Jan' , 'Feb' , 'Mar' , 'Apr' , 'May' , 'Jun' , 'Jul' , 'Aug' , 'Sep' , 'Oct' , 'Nov' , 'Dec'],
-            shortWeekdays:undefined
+            shortMonths:[ 'Jan' , 'Feb' , 'Mar' , 'Apr' , 'May' , 'Jun' , 'Jul' , 'Aug' , 'Sep' , 'Oct' , 'Nov' , 'Dec']
         }
     });
     /// building chart
-    return Highcharts.chart(chartId, chartProps)
+    return Highcharts.chart(chartId, chartProps);
 }

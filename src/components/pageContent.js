@@ -15,7 +15,7 @@ export default function PageContent(parentId){
     let chartItems = window.CHART_ITEMS || [];
     let dataSource = window.DATA_SOURCE  || 'SQL';
     let address = window.ADDRESS || 'GetStatusPC,null,null,null,null';
-    let chartType = window.CHART_TYPE || 'column';
+    let chartType = window.CHART_TYPE || 'spiderweb';
     let yAxis = window.Y_AXIS || ['اردیبهشت 96', 'تیر 96'];
     let xAxis = window.X_AXIS || 'ContractName';
     let legend = window.LEGEND || null ;
@@ -94,6 +94,7 @@ const buildChartData = (legend, filters, yAxis, data) => {
                     return {
                         name: key == 'undefined' ? '' : key,
                         data: R.map(R.prop(yAxis), rows)
+                        // pointPlacement: 'on'
                     };
                 }),
                 R.values
@@ -125,4 +126,8 @@ const reduceFilters = filters => R.reduce(
     filters
 );
 
-const buildLegends = yAxis => data => R.map(x => { return { name: x, data: R.map(R.prop(x), data) };}, yAxis);
+const buildLegends = yAxis => data => R.map(x => { return {
+    name: x,
+    data: R.map(R.prop(x), data)
+    // pointPlacement: 'on'
+};}, yAxis);

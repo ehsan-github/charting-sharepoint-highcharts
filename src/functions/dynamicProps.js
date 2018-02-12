@@ -4,7 +4,9 @@ export const buildXAxis = (xAxis, data) => {
     return { xAxis: {
         categories: pickProp(xAxis, data),
         title: { text: xAxis },
-        crosshair: false
+        crosshair: false,
+        tickmarkPlacement: 'on',
+        lineWidth: 0
     } };
 };
 
