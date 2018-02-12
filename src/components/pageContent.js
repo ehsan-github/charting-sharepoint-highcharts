@@ -14,7 +14,7 @@ export default function PageContent(parentId){
 
     let chartItems = window.CHART_ITEMS || [];
     let dataSource = window.DATA_SOURCE  || 'SQL';
-    let address = window.ADDRESS || 'GetStatusPC';
+    let address = window.ADDRESS || 'GetStatusPC,null,null,null,null';
     let chartType = window.CHART_TYPE || 'column';
     let yAxis = window.Y_AXIS || ['اردیبهشت 96', 'تیر 96'];
     let xAxis = window.X_AXIS || 'ContractName';
@@ -27,7 +27,7 @@ export default function PageContent(parentId){
 
     let setItems = items => {
         chartItems = items;
-        let chartSeries = buildChartData(legend, filters, yAxis, chartItems);
+        let { chartSeries } = buildChartData(legend, filters, yAxis, chartItems);
         xAxisProps = buildXAxis(xAxis, chartItems);
         chartBuilder(app, chartType, { series: chartSeries }, xAxisProps);
         filters = buildFilters(filterItems);
@@ -49,7 +49,8 @@ export default function PageContent(parentId){
     let changeFilter = ({ name, value }) => {
         let index = R.findIndex(R.propEq('name', name), filters);
         filters[index] = R.assoc('value', value, filters[index]);
-        let chartSeries = buildChartData(legend, filters, yAxis, chartItems);
+        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, chartItems);
+        xAxisProps = buildXAxis(xAxis, chartData);
         chartBuilder(app, chartType, { series: chartSeries }, xAxisProps);
     };
     app.changeFilter = changeFilter;
@@ -84,23 +85,28 @@ export default function PageContent(parentId){
 const buildFilters = R.map(x => { return { name: x, value: 'همه' }; });
 
 const buildChartData = (legend, filters, yAxis, data) => {
+    let chartData = reduceFilters(filters)(data);
     if (typeof yAxis == 'string') {
-        return R.pipe(
-            reduceFilters(filters),
-            R.groupBy(R.prop(legend)),
-            R.mapObjIndexed((rows, key) => {   // select yAxis from each Group
-                return {
-                    name: key == 'undefined' ? '' : key,
-                    data: R.map(R.prop(yAxis), rows)
-                };
-            }),
-            R.values
-        )(data);
+        return {
+            chartSeries: R.pipe(
+                R.groupBy(R.prop(legend)),
+                R.mapObjIndexed((rows, key) => {   // select yAxis from each Group
+                    return {
+                        name: key == 'undefined' ? '' : key,
+                        data: R.map(R.prop(yAxis), rows)
+                    };
+                }),
+                R.values
+            )(chartData),
+            chartData
+        };
     }
-    return R.pipe(
-        reduceFilters(filters),
-        buildLegends(yAxis)
-    )(data);
+    return {
+        chartSeries: R.pipe(
+            buildLegends(yAxis)
+        )(chartData),
+        chartData
+    };
 };
 
 const getUniqOptions = (prop, data) => R.pipe(
