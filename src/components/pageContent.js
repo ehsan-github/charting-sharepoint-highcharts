@@ -61,13 +61,15 @@ export default function PageContent(parentId){
             .then(x => JSON.parse(x))
             .then(items => {
                 setItems(items);
-            });
+            })
+            .catch(err => console.log('err: ', err.Message))
+        ;
 
     } else if (dataSource == 'Sharepoint') {
         getAddressItems(address)
             .map(x => JSON.parse(x))
             .fork(
-                err     => alert('addError', err),
+                err     => { console.log('err: ', err.Message) },
                 items   => {
                     setItems(items);
                 }
