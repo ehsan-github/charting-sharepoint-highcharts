@@ -35,7 +35,7 @@ module.exports = {
         //   '^/api': ''
         // }
       },
-      '/_layouts/15/reporting/tahvil/tahvil.aspx': {
+      '/_layouts/15/reporting/service.aspx': {
           target: 'http://192.168.33.3:50',
       }
     },

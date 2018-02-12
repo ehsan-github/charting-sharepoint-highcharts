@@ -23,7 +23,7 @@ export const getSpItems = spName => $.ajax({
         credentials: 'include',
         'X-Requested-With': 'XMLHttpRequest'
     },
-    url: '/_layouts/15/reporting/tahvil/tahvil.aspx/getspdata',
+    url: '/_layouts/15/reporting/service.aspx/getspdata',
     data: JSON.stringify({ spName })
 
 })
