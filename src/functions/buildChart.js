@@ -21,7 +21,7 @@ export default function buildChart(app, type, series, ...x){
     let subTitle = setSubTitle(window.SUB_TITLE || 'Source: thesolarfoundation.com');
     let yAxis = window.Y_AXIS_TITLE || '';
 
-    let tooltip = buildTooltip(type, {})();
+    let tooltip = buildTooltip(type);
 
     if (series.length == 0) {
         series = {
