@@ -14,12 +14,19 @@ export default function PageContent(parentId){
 
     let chartItems = window.CHART_ITEMS || [];
     let dataSource = window.DATA_SOURCE  || 'SQL';
-    let address = window.ADDRESS || 'GetStatusPC,null,null,null,null';
-    let chartType = window.CHART_TYPE || 'spiderweb';
-    let yAxis = window.Y_AXIS || ['اردیبهشت 96', 'تیر 96'];
-    let xAxis = window.X_AXIS || 'ContractName';
+
+    // let address = window.ADDRESS || 'GetStatusPC,null,null,null,null';
+    // let chartType = window.CHART_TYPE || 'spiderweb';
+    // let yAxis = window.Y_AXIS || ['اردیبهشت 96', 'تیر 96'];
+    // let xAxis = window.X_AXIS || 'ContractName';
+    // let filterItems = window.FILTER_ITEMS || ['Area', 'ContractName'];
+
+    let address = window.ADDRESS || '';
+    let chartType = window.CHART_TYPE || 'column';
+    let yAxis = window.Y_AXIS || [];
+    let xAxis = window.X_AXIS || '';
+    let filterItems = window.FILTER_ITEMS || [];
     let legend = window.LEGEND || null ;
-    let filterItems = window.FILTER_ITEMS || ['Area', 'ContractName'];
 
     let xAxisProps = buildXAxis(xAxis, chartItems);
     let filters = buildFilters(filterItems);
