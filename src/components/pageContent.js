@@ -16,8 +16,15 @@ export default function PageContent(parentId){
     let dataSource = window.DATA_SOURCE  || 'SQL';
 
     // let address = window.ADDRESS || 'GetStatusPC,null,null,null,null';
-    // let chartType = window.CHART_TYPE || 'spiderweb';
-    // let yAxis = window.Y_AXIS || ['اردیبهشت 96', 'تیر 96'];
+    // let chartType = window.CHART_TYPE || '';
+    // let yAxis = window.Y_AXIS || [
+        
+    //     { name: 'تیر 96', type: 'column' },
+    //     { name: 'اردیبهشت 96', type: 'column' },
+    //     { name: 'مهر96', type: 'column' },
+    //     { name: 'خرداد 96', type: 'line', index: 1 },
+    //     { name: 'آبان 96', type: 'line', index: 1 },
+    // ];
     // let xAxis = window.X_AXIS || 'ContractName';
     // let filterItems = window.FILTER_ITEMS || ['Area', 'ContractName'];
 
@@ -133,8 +140,10 @@ const reduceFilters = filters => R.reduce(
     filters
 );
 
-const buildLegends = yAxis => data => R.map(x => { return {
-    name: x,
-    data: R.map(R.prop(x), data)
+const buildLegends = yAxises => data => R.map(yAxis => { return {
+    type: yAxis.type,
+    name: yAxis.name,
+    data: R.map(R.prop(yAxis.name), data),
+    yAxis: yAxis.index || 0
     // pointPlacement: 'on'
-};}, yAxis);
+};}, yAxises);

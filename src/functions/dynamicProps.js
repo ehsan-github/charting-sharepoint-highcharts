@@ -1,4 +1,7 @@
 import * as R from 'ramda';
+import Highcharts from 'highcharts';
+
+let  mapIndexed = R.addIndex(R.map);
 
 export const buildXAxis = (xAxis, data) => {
     return { xAxis: {
@@ -10,6 +13,27 @@ export const buildXAxis = (xAxis, data) => {
     } };
 };
 
+export const buildYAxis = mapIndexed((yAxis, index) => {
+    return { // Primary yAxis
+        labels: {
+            format: `{value}${yAxis.format}`,
+            style: {
+                color: Highcharts.getOptions().colors[index]
+            }
+        },
+        title: {
+            text: yAxis.text,
+            style: {
+                color: Highcharts.getOptions().colors[index]
+            },
+            gridLineInterpolation: 'polygon',
+            lineWidth: 0,
+            min: 0,
+            reversed: false
+        },
+        opposite: index % 2 == 1
+    };
+});
 
 const pickProp = (prop, data) => R.pipe(
     R.map(R.prop(prop)),

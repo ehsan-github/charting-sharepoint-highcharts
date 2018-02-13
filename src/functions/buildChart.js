@@ -4,7 +4,7 @@ import HighchartsMore from 'highcharts-more';
 import * as R from 'ramda';
 
 import { setTitle, setSubTitle } from './staticProps';
-import { buildTooltip } from './dynamicProps';
+import { buildTooltip, buildYAxis } from './dynamicProps';
 
 Exporting(Highcharts);
 HighchartsMore(Highcharts);
@@ -27,62 +27,22 @@ export default function buildChart(app, type, series, ...x){
     let title = setTitle(window.TITLE || 'Solar Employment Growth by Sector, 2010-2016');
 
     let subTitle = setSubTitle(window.SUB_TITLE || 'Source: thesolarfoundation.com');
-    let yAxis = window.Y_AXIS_TITLE || '';
+    let yAxis = buildYAxis(window.Y_AXIS_TITLE || [
+        { text: 'Rainfall', format: 'mm' },
+        { text: 'Tempreture', format: '°C' },
+    ]);
 
     let tooltip = buildTooltip(type);
 
-    if (series.length == 0) {
-        series = {
-            series: [{
-                name: 'London',
-                data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
-            }]
-        };
-    }
     let remaining = {
         chart: { polar, type },
-        pane: {
-            size: '80%'
-        },
-        yAxis: {
-            title: {
-                text: yAxis
-            },
-            gridLineInterpolation: 'polygon',
-            lineWidth: 0,
-            min: 0,
-            reversed: false
-        },
+        yAxis,
         legend: {
             layout: 'vertical',
             align: 'right',
             verticalAlign: 'middle'
         },
-
-        // plotOptions: {
-        //     series: {
-        //         label: {
-        //             connectorAllowed: false
-        //         },
-        //         pointStart: 2010
-        //     }
-        // },
-
-        responsive: {
-            rules: [{
-                condition: {
-                    maxWidth: 500
-                },
-                chartOptions: {
-                    legend: {
-                        layout: 'horizontal',
-                        align: 'center',
-                        verticalAlign: 'bottom'
-                    }
-                }
-            }]
-        }
-
+        colors: ['#64B5F6', '#E57373', '#81C784 ', '#FFD54F', '#9575CD', '#4DD0E1', '#F0B27A', '#F0B27A', '#D35400', '#99FFFF', '#669966', '#F5B041', '#99A3A4', '#FFCCBC', '#9FA8DA']
     };
 
     // merge all chat props together
