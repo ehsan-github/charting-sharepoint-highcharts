@@ -16,18 +16,23 @@ export default function PageContent(parentId){
     let chartItems = window.CHART_ITEMS || [];
     let dataSource = window.DATA_SOURCE  || 'SQL';
 
+    // let address = window.ADDRESS || 'GetWeeklyOperation,null,null,null';
     // let address = window.ADDRESS || 'GetStatusPC,null,null,null,null';
     // let chartType = window.CHART_TYPE || 'line';
-    // let yAxis = window.Y_AXIS || 'ContractID' || [
-    //     { name: 'تیر 96', type: 'column' },
-    //     { name: 'اردیبهشت 96', type: 'column' },
-    //     { name: 'مهر96', type: 'column' },
-    //     { name: 'خرداد 96', type: 'line', index: 1 },
-    //     { name: 'آبان 96', type: 'line', index: 1 },
-    // ];
+    // let yAxis = window.Y_AXIS ||
+    //     [
+    //         { name: 'ContractID', type: 'line' },
+    //         { name: 'Flag', type: 'line', index: 1 }
+    //     ] || [
+    //         { name: 'تیر 96', type: 'column' },
+    //         { name: 'اردیبهشت 96', type: 'column' },
+    //         { name: 'مهر96', type: 'column' },
+    //         { name: 'خرداد 96', type: 'line', index: 1 },
+    //         { name: 'آبان 96', type: 'line', index: 1 },
+    //     ];
     // let xAxis = window.X_AXIS || 'PeriodID';
     // let filterItems = window.FILTER_ITEMS || [
-    //     { name: 'Status', dispName: 'وضعیت', multi: false },
+    //     { name: 'Status', dispName: 'وضعیت', multi: true },
     // ];
 
     let address = window.ADDRESS || '';
@@ -45,7 +50,7 @@ export default function PageContent(parentId){
 
     let setItems = items => {
         chartItems = stringReplacement(renamings, items);
-        let { chartSeries } = buildChartData(legend, filters, yAxis, chartItems);
+        let { chartSeries } = buildChartData(legend, filters, yAxis, xAxis, chartItems);
         xAxisProps = buildXAxis(xAxis, chartItems);
         chartBuilder(app, chartType, { series: chartSeries }, xAxisProps);
         filters = buildFilters(filterItems);
@@ -75,7 +80,7 @@ export default function PageContent(parentId){
     let changeFilter = ({ name, value }) => {
         let index = R.findIndex(R.propEq('name', name), filters);
         filters[index] = R.assoc('value', value, filters[index]);
-        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, chartItems);
+        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems);
         xAxisProps = buildXAxis(xAxis, chartData);
         chartBuilder(app, chartType, { series: chartSeries }, xAxisProps);
     };
@@ -86,7 +91,7 @@ export default function PageContent(parentId){
     let changeMultiFilter = ({ name, value }) => {
         let index = R.findIndex(R.propEq('name', name), filters);
         filters[index] = R.assoc('value', value, filters[index]);
-        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, chartItems);
+        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems);
         xAxisProps = buildXAxis(xAxis, chartData);
         chartBuilder(app, chartType, { series: chartSeries }, xAxisProps);
     };
@@ -123,8 +128,8 @@ const buildFilters = R.map(x => {
     return multi ? { name, value: [] } : { name, value: 'همه' };
 });
 
-const buildChartData = (legend, filters, yAxis, data) => {
-    let chartData = reduceFilters(filters)(data);
+const buildChartData = (legend, filters, yAxis, xAxis, data) => {
+    let chartData = reduceFilters(filters, xAxis, yAxis)(data);
     if (typeof yAxis == 'string') {
         return {
             chartSeries: R.pipe(
@@ -156,15 +161,34 @@ const getUniqOptions = (prop, data, multi) => R.pipe(
     x => multi ? R.identity(x) : R.prepend('همه', x)
 )(data);
 
-const reduceFilters = filters => R.reduce(
+const reduceFilters = (filters, xAxis, yAxis) => R.reduce(
     (acc, { name, value }) => {
         if (!isNaN(value)) value = Number(value);
         if (typeof value == 'object') {
-            return R.filter(
-                R.propSatisfies(
+
+            return R.reduce((miniAcc,val) => {
+                if (R.propSatisfies(
                     x => value.includes(x),
-                    name),
-                acc)
+                    name,
+                    val)) {
+                    let index = R.findIndex(R.propEq(xAxis, R.prop(xAxis, val)), miniAcc)
+                    if (index == -1) {
+                        return R.append(val, miniAcc)
+                    } else {
+                        if (typeof yAxis == 'string') {
+                            let oldVal = R.prop(yAxis, val)
+                            return R.adjust(R.evolve({ [yAxis]: R.add(oldVal) }), index, miniAcc)
+                        } else {
+                            return R.reduce((microAcc, miniYAxis) => {
+                                let oldVal = R.prop(miniYAxis.name, val)
+                                return R.adjust(R.evolve({ [miniYAxis.name]: R.add(oldVal) }), index, microAcc)
+                            }, miniAcc, yAxis)
+                        }
+                    }
+                } else {
+                    return miniAcc
+                }
+            }, [], acc)
         } else {
             return value == 'همه' ? acc : R.filter(R.propEq(name, value), acc);
         }
