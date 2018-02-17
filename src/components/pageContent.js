@@ -37,10 +37,11 @@ export default function PageContent(parentId){
 
     let xAxisProps = buildXAxis(xAxis, chartItems);
     let filters = buildFilters(filterItems);
+    let renamings = window.RENAMINGS || {};
 
 
     let setItems = items => {
-        chartItems = items;
+        chartItems = stringReplacement(renamings, items);
         let { chartSeries } = buildChartData(legend, filters, yAxis, chartItems);
         xAxisProps = buildXAxis(xAxis, chartItems);
         chartBuilder(app, chartType, { series: chartSeries }, xAxisProps);
@@ -147,3 +148,7 @@ const buildLegends = yAxises => data => R.map(yAxis => { return {
     yAxis: yAxis.index || 0
     // pointPlacement: 'on'
 };}, yAxises);
+
+const stringReplacement = (replacements, data) => R.map(
+    R.map(value => R.propOr(value, value, replacements)),
+    data);
