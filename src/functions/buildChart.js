@@ -24,9 +24,10 @@ export default function buildChart(app, type, series, ...x){
     }
 
     // set different chart props
-    let title = setTitle(window.TITLE || 'Solar Employment Growth by Sector, 2010-2016');
+    let title = setTitle(window.TITLE || '');
 
-    let subTitle = setSubTitle(window.SUB_TITLE || 'Source: thesolarfoundation.com');
+    let subTitle = setSubTitle(window.SUB_TITLE || '');
+
     let yAxis = buildYAxis(window.Y_AXIS_TITLE || [
         { text: 'Rainfall', format: 'mm' },
         { text: 'Tempreture', format: '°C' },
