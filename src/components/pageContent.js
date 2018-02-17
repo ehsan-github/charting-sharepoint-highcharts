@@ -16,17 +16,16 @@ export default function PageContent(parentId){
     let dataSource = window.DATA_SOURCE  || 'SQL';
 
     // let address = window.ADDRESS || 'GetStatusPC,null,null,null,null';
-    // let chartType = window.CHART_TYPE || '';
-    // let yAxis = window.Y_AXIS || [
-        
+    // let chartType = window.CHART_TYPE || 'line';
+    // let yAxis = window.Y_AXIS || 'ContractID' || [
     //     { name: 'تیر 96', type: 'column' },
     //     { name: 'اردیبهشت 96', type: 'column' },
     //     { name: 'مهر96', type: 'column' },
     //     { name: 'خرداد 96', type: 'line', index: 1 },
     //     { name: 'آبان 96', type: 'line', index: 1 },
     // ];
-    // let xAxis = window.X_AXIS || 'ContractName';
-    // let filterItems = window.FILTER_ITEMS || ['Area', 'ContractName'];
+    // let xAxis = window.X_AXIS || 'PeriodID';
+    // let filterItems = window.FILTER_ITEMS || ['Status'];
 
     let address = window.ADDRESS || '';
     let chartType = window.CHART_TYPE || 'column';
