@@ -32,13 +32,31 @@ text.highcharts-credits {
 }
 
 .filter select {
-    min-width: 100px;
+    min-width: 150px;
     direction: rtl;
     padding: 5px;
     border-radius: 5px;
 }
 
-.filter span {
-    padding: 0px 10px 5px 20px;
+.filter .filtertitle {
     float: right;
+    min-width: 100px;
+}
+
+span.selection {
+    text-align: right;
+    direction: rtl;
+}
+
+.select2-selection--multiple .select2-selection__choice {
+    width: 88%;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove{
+    margin-right: -1px;
+    padding-left: 3px;
+}
+
+.select2-container--default .select2-results>.select2-results__options {
+    direction: rtl;
 }

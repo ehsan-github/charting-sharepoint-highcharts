@@ -5,6 +5,7 @@ import { getSpItems, getAddressItems } from '../api';
 
 import chartBuilder  from '../functions/buildChart';
 import SelectFilter from './SelectFilter';
+import MultiSelectFilter from './MultiSelectFilter';
 import { buildXAxis } from '../functions/dynamicProps';
 import Elem from '../elements/Element';
 
@@ -25,18 +26,21 @@ export default function PageContent(parentId){
     //     { name: 'آبان 96', type: 'line', index: 1 },
     // ];
     // let xAxis = window.X_AXIS || 'PeriodID';
-    // let filterItems = window.FILTER_ITEMS || ['Status'];
+    // let filterItems = window.FILTER_ITEMS || [
+    //     { name: 'Status', dispName: 'وضعیت', multi: false },
+    // ];
 
     let address = window.ADDRESS || '';
     let chartType = window.CHART_TYPE || 'column';
     let yAxis = window.Y_AXIS || [];
     let xAxis = window.X_AXIS || '';
     let filterItems = window.FILTER_ITEMS || [];
+
     let legend = window.LEGEND || null ;
+    let renamings = window.RENAMINGS || {};
 
     let xAxisProps = buildXAxis(xAxis, chartItems);
     let filters = buildFilters(filterItems);
-    let renamings = window.RENAMINGS || {};
 
 
     let setItems = items => {
@@ -52,14 +56,22 @@ export default function PageContent(parentId){
         app.appendChild(filterBox);
         let filterHeader = Elem({ type: 'h3', title: 'فیلترها' });
         filterBox.appendChild(filterHeader);
-        filterItems.forEach(item => {
-            let options = getUniqOptions(item, items);
-            SelectFilter(app, filterBox, item, options);
+        filterItems.forEach(({ name, dispName, multi })=> {
+            let options = getUniqOptions(name, items, multi);
+            if (multi) {
+                MultiSelectFilter(app, filterBox, { name, dispName, multi }, options);
+            } else {
+                SelectFilter(app, filterBox, { name, dispName, multi }, options);
+            }
         });
 
-    };
+        // adding select2 to all selects
+        window.jQuery('select').select2()
+    }
     app.setItems = setItems;
 
+    // filter functions
+    // simple select filter
     let changeFilter = ({ name, value }) => {
         let index = R.findIndex(R.propEq('name', name), filters);
         filters[index] = R.assoc('value', value, filters[index]);
@@ -69,6 +81,16 @@ export default function PageContent(parentId){
     };
     app.changeFilter = changeFilter;
 
+    // multi select filter
+
+    let changeMultiFilter = ({ name, value }) => {
+        let index = R.findIndex(R.propEq('name', name), filters);
+        filters[index] = R.assoc('value', value, filters[index]);
+        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, chartItems);
+        xAxisProps = buildXAxis(xAxis, chartData);
+        chartBuilder(app, chartType, { series: chartSeries }, xAxisProps);
+    };
+    app.changeMultiFilter = changeMultiFilter;
     // Get Chart DATA
 
     if (dataSource == 'SQL'){
@@ -96,7 +118,10 @@ export default function PageContent(parentId){
 
 }
 
-const buildFilters = R.map(x => { return { name: x, value: 'همه' }; });
+const buildFilters = R.map(x => {
+    let { multi, name } = x;
+    return multi ? { name, value: [] } : { name, value: 'همه' };
+});
 
 const buildChartData = (legend, filters, yAxis, data) => {
     let chartData = reduceFilters(filters)(data);
@@ -124,17 +149,25 @@ const buildChartData = (legend, filters, yAxis, data) => {
     };
 };
 
-const getUniqOptions = (prop, data) => R.pipe(
+const getUniqOptions = (prop, data, multi) => R.pipe(
     R.map(R.prop(prop)),
     R.uniq,
     R.reject( x => x == null),
-    R.prepend('همه')
+    x => multi ? R.identity(x) : R.prepend('همه', x)
 )(data);
 
 const reduceFilters = filters => R.reduce(
     (acc, { name, value }) => {
         if (!isNaN(value)) value = Number(value);
-        return value == 'همه' ? acc : R.filter(R.propEq(name, value), acc);
+        if (typeof value == 'object') {
+            return R.filter(
+                R.propSatisfies(
+                    x => value.includes(x),
+                    name),
+                acc)
+        } else {
+            return value == 'همه' ? acc : R.filter(R.propEq(name, value), acc);
+        }
     },
     R.__,
     filters
