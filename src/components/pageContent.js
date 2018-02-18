@@ -3,6 +3,8 @@ import * as R from 'ramda';
 // import update from '../updates';
 import { getSpItems, getAddressItems } from '../api';
 
+// import Data from '../data'
+
 import chartBuilder  from '../functions/buildChart';
 import SelectFilter from './SelectFilter';
 import MultiSelectFilter from './MultiSelectFilter';
@@ -18,10 +20,10 @@ export default function PageContent(parentId){
 
     // let address = window.ADDRESS || 'GetWeeklyOperation,null,null,null';
     // let address = window.ADDRESS || 'GetStatusPC,null,null,null,null';
-    // let chartType = window.CHART_TYPE || 'line';
-    // let yAxis = window.Y_AXIS ||
+    // let chartType = window.CHART_TYPE || 'spiderweb';
+    // let yAxis = window.Y_AXIS || 'ContractID' ||
     //     [
-    //         { name: 'ContractID', type: 'line' },
+    //         { name: 'ContractID', dispName: 'سیب', type: 'line' },
     //         { name: 'Flag', type: 'line', index: 1 }
     //     ] || [
     //         { name: 'تیر 96', type: 'column' },
@@ -32,7 +34,7 @@ export default function PageContent(parentId){
     //     ];
     // let xAxis = window.X_AXIS || 'PeriodID';
     // let filterItems = window.FILTER_ITEMS || [
-    //     { name: 'Status', dispName: 'وضعیت', multi: true },
+    //     { name: 'Status', dispName: 'وضعیت', multi: false },
     // ];
 
     let address = window.ADDRESS || '';
@@ -102,6 +104,8 @@ export default function PageContent(parentId){
         getSpItems(address)
             .then(x => JSON.parse(x))
             .then(items => {
+                // console.log(items)
+                // items = JSON.parse(Data)
                 setItems(items);
             })
             .catch(err => console.log('err: ', err.Message))
@@ -125,7 +129,7 @@ export default function PageContent(parentId){
 
 const buildFilters = R.map(x => {
     let { multi, name } = x;
-    return multi ? { name, value: [] } : { name, value: 'همه' };
+    return multi ? { name, value: [] } : { name, value: '' };
 });
 
 const buildChartData = (legend, filters, yAxis, xAxis, data) => {
@@ -154,11 +158,11 @@ const buildChartData = (legend, filters, yAxis, xAxis, data) => {
     };
 };
 
-const getUniqOptions = (prop, data, multi) => R.pipe(
+const getUniqOptions = (prop, data) => R.pipe(
     R.map(R.prop(prop)),
     R.uniq,
-    R.reject( x => x == null),
-    x => multi ? R.identity(x) : R.prepend('همه', x)
+    R.reject( x => x == null)
+    // x => multi ? R.identity(x) : R.prepend('همه', x)
 )(data);
 
 const reduceFilters = (filters, xAxis, yAxis) => R.reduce(
@@ -199,7 +203,7 @@ const reduceFilters = (filters, xAxis, yAxis) => R.reduce(
 
 const buildLegends = yAxises => data => R.map(yAxis => { return {
     type: yAxis.type,
-    name: yAxis.name,
+    name: yAxis.dispName,
     data: R.map(R.prop(yAxis.name), data),
     yAxis: yAxis.index || 0
     // pointPlacement: 'on'
@@ -208,3 +212,4 @@ const buildLegends = yAxises => data => R.map(yAxis => { return {
 const stringReplacement = (replacements, data) => R.map(
     R.map(value => R.propOr(value, value, replacements)),
     data);
+

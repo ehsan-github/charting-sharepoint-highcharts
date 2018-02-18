@@ -12,6 +12,8 @@ export default function SelectFilter(app, parent, { name, dispName }, options){
     let selectList = Select({ options });
     wrapper.appendChild(selectList);
 
+    selectList.selectedIndex = 0
+    app.changeFilter({ name, value: selectList.value });
     selectList.onchange = ({ target: { value } }) => {
         app.changeFilter({ name, value });
     };

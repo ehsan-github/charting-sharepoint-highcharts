@@ -28,7 +28,7 @@ export default function buildChart(app, type, series, ...x){
 
     let subTitle = setSubTitle(window.SUB_TITLE || '');
 
-    let yAxis = buildYAxis(window.Y_AXIS_TITLE || [
+    let yAxis = buildYAxis(JSON.parse(window.Y_AXIS_TITLE) || [
         { text: 'Rainfall', format: 'mm' },
         { text: 'Tempreture', format: '°C' },
     ]);
