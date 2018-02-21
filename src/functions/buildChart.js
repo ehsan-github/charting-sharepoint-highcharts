@@ -1,15 +1,18 @@
 import Highcharts from 'highcharts';
 import Exporting from 'highcharts/modules/exporting';
+import data from 'highcharts/modules/data';
+import drilldown from 'highcharts/modules/drilldown';
 import HighchartsMore from 'highcharts-more';
 import * as R from 'ramda';
-
 import { setTitle, setSubTitle } from './staticProps';
 import { buildTooltip, buildYAxis } from './dynamicProps';
 
+data(Highcharts);
 Exporting(Highcharts);
 HighchartsMore(Highcharts);
+drilldown(Highcharts);
 
-export default function buildChart(app, type, series, ...x){
+export default function buildChart(app, type, series, drillDown, ...x){
 
     let chartcontainer = document.createElement('div');
     const chartId = 'chartcontainer';
@@ -21,6 +24,8 @@ export default function buildChart(app, type, series, ...x){
     if (type == 'spiderweb'){
         polar = true;
         type = 'line';
+    } else if (type == 'drilldown'){
+        type = 'column'
     }
 
     // set different chart props
@@ -28,27 +33,54 @@ export default function buildChart(app, type, series, ...x){
 
     let subTitle = setSubTitle(window.SUB_TITLE || '');
 
-    let yAxis = buildYAxis(JSON.parse(window.Y_AXIS_TITLE) || [
+    let yAxis = buildYAxis(window.Y_AXIS_TITLE || [
         { text: 'Rainfall', format: 'mm' },
         { text: 'Tempreture', format: '°C' },
     ]);
 
-    let tooltip = buildTooltip(type);
+    let tooltip = buildTooltip(drillDown == {} ? type : 'drilldown');
+
+    let legend = drillDown == {} ? {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    } : {
+        enabled: false
+    }
 
     let remaining = {
-        chart: { polar, type },
+        chart: {
+            polar,
+            type,
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false
+        },
         yAxis,
-        legend: {
-            layout: 'vertical',
-            align: 'right',
-            verticalAlign: 'middle'
+        legend,
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: false
+                },
+                showInLegend: true
+            },
+            series: {
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.y:.1f}'
+                }
+            }
         },
         colors: ['#64B5F6', '#E57373', '#81C784 ', '#FFD54F', '#9575CD', '#4DD0E1', '#F0B27A', '#F0B27A', '#D35400', '#99FFFF', '#669966', '#F5B041', '#99A3A4', '#FFCCBC', '#9FA8DA']
     };
 
     // merge all chat props together
 
-    let chartProps = R.mergeAll([title, subTitle, tooltip, series, remaining, ...x]);
+    let chartProps = R.mergeAll([title, subTitle, tooltip, series, drillDown, remaining, ...x]);
 
     ///setting global options
     Highcharts.setOptions({
@@ -60,7 +92,7 @@ export default function buildChart(app, type, series, ...x){
             downloadPNG: 'دانلود PNG image',
             downloadSVG: 'دانلود SVG vector image',
             downloadXLS: 'دانلود XLS',
-            drillUpText: 'Back to {series.name}',
+            drillUpText: 'برگرد ',
             loading: 'Loading...',
             months:[ 'January' , 'February' , 'March' , 'April' , 'May' , 'June' , 'July' , 'August' , 'September' , 'October' , 'November' , 'December'],
             noData: 'No data to display',

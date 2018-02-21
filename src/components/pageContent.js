@@ -3,7 +3,7 @@ import * as R from 'ramda';
 // import update from '../updates';
 import { getSpItems, getAddressItems } from '../api';
 
-// import Data from '../data'
+import { Data } from '../Data';
 
 import chartBuilder  from '../functions/buildChart';
 import SelectFilter from './SelectFilter';
@@ -16,45 +16,46 @@ export default function PageContent(parentId){
     // let myChart = null;
 
     let chartItems = window.CHART_ITEMS || [];
-    let dataSource = window.DATA_SOURCE  || 'SQL';
+    let dataSource = window.DATA_SOURCE  || '';
 
-    // let address = window.ADDRESS || 'GetWeeklyOperation,null,null,null';
+    let address = window.ADDRESS || 'GetWeeklyOperation,null,null,null';
     // let address = window.ADDRESS || 'GetStatusPC,null,null,null,null';
-    // let chartType = window.CHART_TYPE || 'spiderweb';
-    // let yAxis = window.Y_AXIS || 'ContractID' ||
-    //     [
-    //         { name: 'ContractID', dispName: 'سیب', type: 'line' },
-    //         { name: 'Flag', type: 'line', index: 1 }
-    //     ] || [
-    //         { name: 'تیر 96', type: 'column' },
-    //         { name: 'اردیبهشت 96', type: 'column' },
-    //         { name: 'مهر96', type: 'column' },
-    //         { name: 'خرداد 96', type: 'line', index: 1 },
-    //         { name: 'آبان 96', type: 'line', index: 1 },
-    //     ];
-    // let xAxis = window.X_AXIS || 'PeriodID';
-    // let filterItems = window.FILTER_ITEMS || [
-    //     { name: 'Status', dispName: 'وضعیت', multi: false },
-    // ];
+    let chartType = window.CHART_TYPE || 'pie';
+    let yAxis = window.Y_AXIS || 'NetworkFinal' ||
+        [
+            { name: 'ContractID', dispName: 'سیب', type: 'line' },
+            { name: 'Flag', type: 'line', index: 1 }
+        ] || [
+            { name: 'تیر 96', type: 'column' },
+            { name: 'اردیبهشت 96', type: 'column' },
+            { name: 'مهر96', type: 'column' },
+            { name: 'خرداد 96', type: 'line', index: 1 },
+            { name: 'آبان 96', type: 'line', index: 1 },
+        ];
+    let { xAxis, drill = null } = window.X_AXIS || { xAxis: 'ContractName', drill: 'Area' };
+    let filterItems = window.FILTER_ITEMS || [
+        { name: 'Status', dispName: 'وضعیت', multi: false },
+    ];
 
-    let address = window.ADDRESS || '';
-    let chartType = window.CHART_TYPE || 'column';
-    let yAxis = window.Y_AXIS || [];
-    let xAxis = window.X_AXIS || '';
-    let filterItems = window.FILTER_ITEMS || [];
+    // let address = window.ADDRESS || '';
+    // let chartType = window.CHART_TYPE || 'column';
+    // let yAxis = window.Y_AXIS || [];
+    // let xAxis = window.X_AXIS || '';
+    // let filterItems = window.FILTER_ITEMS || [];
 
     let legend = window.LEGEND || null ;
     let renamings = window.RENAMINGS || {};
 
-    let xAxisProps = buildXAxis(xAxis, chartItems);
+    let xAxisProps = buildXAxis(xAxis, chartItems, drill);
     let filters = buildFilters(filterItems);
 
 
     let setItems = items => {
         chartItems = stringReplacement(renamings, items);
-        let { chartSeries } = buildChartData(legend, filters, yAxis, xAxis, chartItems);
-        xAxisProps = buildXAxis(xAxis, chartItems);
-        chartBuilder(app, chartType, { series: chartSeries }, xAxisProps);
+        let { chartSeries } = buildChartData(legend, filters, yAxis, xAxis, chartItems, drill, chartType);
+        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartItems);
+        xAxisProps = buildXAxis(xAxis, chartItems, drill);
+        chartBuilder(app, chartType, { series: chartSeries }, drillDown, xAxisProps);
         filters = buildFilters(filterItems);
         // SelectChartType(app, myChart);
 
@@ -82,9 +83,10 @@ export default function PageContent(parentId){
     let changeFilter = ({ name, value }) => {
         let index = R.findIndex(R.propEq('name', name), filters);
         filters[index] = R.assoc('value', value, filters[index]);
-        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems);
-        xAxisProps = buildXAxis(xAxis, chartData);
-        chartBuilder(app, chartType, { series: chartSeries }, xAxisProps);
+        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems, drill, chartType);
+        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartItems);
+        xAxisProps = buildXAxis(xAxis, chartData, drill);
+        chartBuilder(app, chartType, { series: chartSeries }, drillDown, xAxisProps);
     };
     app.changeFilter = changeFilter;
 
@@ -93,9 +95,10 @@ export default function PageContent(parentId){
     let changeMultiFilter = ({ name, value }) => {
         let index = R.findIndex(R.propEq('name', name), filters);
         filters[index] = R.assoc('value', value, filters[index]);
-        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems);
-        xAxisProps = buildXAxis(xAxis, chartData);
-        chartBuilder(app, chartType, { series: chartSeries }, xAxisProps);
+        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems, drill, chartType);
+        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartItems);
+        xAxisProps = buildXAxis(xAxis, chartData, drill);
+        chartBuilder(app, chartType, { series: chartSeries }, drillDown, xAxisProps);
     };
     app.changeMultiFilter = changeMultiFilter;
     // Get Chart DATA
@@ -105,7 +108,6 @@ export default function PageContent(parentId){
             .then(x => JSON.parse(x))
             .then(items => {
                 // console.log(items)
-                // items = JSON.parse(Data)
                 setItems(items);
             })
             .catch(err => console.log('err: ', err.Message))
@@ -120,6 +122,8 @@ export default function PageContent(parentId){
                     setItems(items);
                 }
             );
+    } else {
+        setItems(Data);
     }
     //
 
@@ -132,30 +136,80 @@ const buildFilters = R.map(x => {
     return multi ? { name, value: [] } : { name, value: '' };
 });
 
-const buildChartData = (legend, filters, yAxis, xAxis, data) => {
+const buildChartData = (legend, filters, yAxis, xAxis, data, drill, type) => {
     let chartData = reduceFilters(filters, xAxis, yAxis)(data);
-    if (typeof yAxis == 'string') {
+    if(type == 'pie') {
+        let data = R.pipe(
+            R.groupBy(R.prop(drill)),
+            R.map(R.map(R.prop(yAxis))),
+            R.map(R.sum),
+            R.mapObjIndexed((value, name)=> {
+                return {
+                    name,
+                    y: value
+                };
+            }),
+            R.values
+            // R.sort(R.descend(R.prop('y')))
+        )(chartData);
         return {
-            chartSeries: R.pipe(
-                R.groupBy(R.prop(legend)),
-                R.mapObjIndexed((rows, key) => {   // select yAxis from each Group
-                    return {
-                        name: key == 'undefined' ? '' : key,
-                        data: R.map(R.prop(yAxis), rows)
-                        // pointPlacement: 'on'
-                    };
-                }),
-                R.values
-            )(chartData),
+            chartSeries: [{
+                name: xAxis,
+                colorByPoint: true,
+                data
+            }],
             chartData
         };
+    } else {
+        if (!drill) {
+            if (typeof yAxis == 'string') {
+                return {
+                    chartSeries: R.pipe(
+                        R.groupBy(R.prop(legend)),
+                        R.mapObjIndexed((rows, key) => {   // select yAxis from each Group
+                            return {
+                                name: key == 'undefined' ? '' : key,
+                                data: R.map(R.prop(yAxis), rows)
+                                // pointPlacement: 'on'
+                            };
+                        }),
+                        R.values
+                    )(chartData),
+                    chartData
+                };
+            }
+            return {
+                chartSeries: R.pipe(
+                    buildLegends(yAxis)
+                )(chartData),
+                chartData
+            };
+        } else {
+            let data = R.pipe(
+                R.groupBy(R.prop(drill)),
+                R.map(R.map(R.prop(yAxis))),
+                R.map(R.sum),
+                R.mapObjIndexed((value, name)=> {
+                    return {
+                        name,
+                        drilldown: name,
+                        y: value
+                    };
+                }),
+                R.values,
+                R.sort(R.descend(R.prop('y')))
+            )(chartData);
+
+            return {
+                chartSeries: [{
+                    name: drill,
+                    colorByPoint: true,
+                    data
+                }],
+                chartData
+            };
+        }
     }
-    return {
-        chartSeries: R.pipe(
-            buildLegends(yAxis)
-        )(chartData),
-        chartData
-    };
 };
 
 const getUniqOptions = (prop, data) => R.pipe(
@@ -213,3 +267,24 @@ const stringReplacement = (replacements, data) => R.map(
     R.map(value => R.propOr(value, value, replacements)),
     data);
 
+const buildDrilldown = (xAxis, drill, yAxis, chartData) => {
+    return (!drill)
+        ? {}
+        : {
+            drilldown: {
+                series: R.pipe(
+                    R.groupBy(R.prop(drill)),
+                    R.map(R.map(R.pick([yAxis, xAxis]))),
+                    R.map(R.sort(R.descend(R.prop(yAxis)))),
+                    R.mapObjIndexed((value, name)=> {
+                        return {
+                            name,
+                            id: name,
+                            data: R.map(x => [R.prop(xAxis, x), R.prop(yAxis, x)], value)
+                        };
+                    }),
+                    R.values
+                )(chartData)
+            }
+        };
+}
