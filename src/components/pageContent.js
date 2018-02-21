@@ -32,7 +32,7 @@ export default function PageContent(parentId){
             { name: 'خرداد 96', type: 'line', index: 1 },
             { name: 'آبان 96', type: 'line', index: 1 },
         ];
-    let { xAxis, drill = null } = window.X_AXIS || { xAxis: 'ContractName', drill: 'Area' };
+    let { xAxis, drill = null } = window.X_AXIS || { xAxis: 'ContractName' };
     let filterItems = window.FILTER_ITEMS || [
         { name: 'Status', dispName: 'وضعیت', multi: false },
     ];
@@ -140,7 +140,7 @@ const buildChartData = (legend, filters, yAxis, xAxis, data, drill, type) => {
     let chartData = reduceFilters(filters, xAxis, yAxis)(data);
     if(type == 'pie') {
         let data = R.pipe(
-            R.groupBy(R.prop(drill)),
+            R.groupBy(R.prop(xAxis)),
             R.map(R.map(R.prop(yAxis))),
             R.map(R.sum),
             R.mapObjIndexed((value, name)=> {
@@ -155,7 +155,6 @@ const buildChartData = (legend, filters, yAxis, xAxis, data, drill, type) => {
         return {
             chartSeries: [{
                 name: xAxis,
-                colorByPoint: true,
                 data
             }],
             chartData

@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import Highcharts from 'highcharts';
 
 let  mapIndexed = R.addIndex(R.map);
-
 export const buildXAxis = (xAxis, data, drill ) => {
     return (!drill)
         ? { xAxis: {
@@ -18,6 +17,58 @@ export const buildXAxis = (xAxis, data, drill ) => {
             }
         };
 };
+
+
+export const buildChartType = (type, polar ) => {
+    if (type == 'pie') {
+        return {
+            type,
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false
+        };
+    } else {
+        return {
+            polar,
+            type
+        };
+    }
+}
+
+export const buildPlotOptions  = (type) => {
+    if (type == 'drilldown') {
+        return {
+            series: {
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                    style: {
+                        direction: 'rtl',
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    },
+                    useHTML: true,
+                    connectorColor: 'silver'
+                }
+            }
+        };
+    } else {
+        return {
+
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    }
+                },
+            }
+        }
+    }
+}
 
 export const buildYAxis = mapIndexed((yAxis, index) => {
     return { // Primary yAxis

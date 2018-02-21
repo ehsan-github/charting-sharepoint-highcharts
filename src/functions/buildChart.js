@@ -5,7 +5,7 @@ import drilldown from 'highcharts/modules/drilldown';
 import HighchartsMore from 'highcharts-more';
 import * as R from 'ramda';
 import { setTitle, setSubTitle } from './staticProps';
-import { buildTooltip, buildYAxis } from './dynamicProps';
+import { buildTooltip, buildYAxis, buildPlotOptions, buildChartType } from './dynamicProps';
 
 data(Highcharts);
 Exporting(Highcharts);
@@ -25,8 +25,10 @@ export default function buildChart(app, type, series, drillDown, ...x){
         polar = true;
         type = 'line';
     } else if (type == 'drilldown'){
-        type = 'column'
+        type = 'column';
     }
+
+    let chart = buildChartType(type, polar);
 
     // set different chart props
     let title = setTitle(window.TITLE || '');
@@ -46,35 +48,15 @@ export default function buildChart(app, type, series, drillDown, ...x){
         verticalAlign: 'middle'
     } : {
         enabled: false
-    }
+    };
+
+    let plotOptions = buildPlotOptions(type);
 
     let remaining = {
-        chart: {
-            polar,
-            type,
-            plotBackgroundColor: null,
-            plotBorderWidth: null,
-            plotShadow: false
-        },
+        chart,
         yAxis,
         legend,
-        plotOptions: {
-            pie: {
-                allowPointSelect: true,
-                cursor: 'pointer',
-                dataLabels: {
-                    enabled: false
-                },
-                showInLegend: true
-            },
-            series: {
-                borderWidth: 0,
-                dataLabels: {
-                    enabled: true,
-                    format: '{point.y:.1f}'
-                }
-            }
-        },
+        plotOptions,
         colors: ['#64B5F6', '#E57373', '#81C784 ', '#FFD54F', '#9575CD', '#4DD0E1', '#F0B27A', '#F0B27A', '#D35400', '#99FFFF', '#669966', '#F5B041', '#99A3A4', '#FFCCBC', '#9FA8DA']
     };
 
@@ -104,6 +86,53 @@ export default function buildChart(app, type, series, drillDown, ...x){
             shortMonths:[ 'Jan' , 'Feb' , 'Mar' , 'Apr' , 'May' , 'Jun' , 'Jul' , 'Aug' , 'Sep' , 'Oct' , 'Nov' , 'Dec']
         }
     });
+    console.log(chartProps)
+    console.log(chartProps0)
     /// building chart
     return Highcharts.chart(chartId, chartProps);
+}
+
+const chartProps0 = {
+    chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+    },
+    title: {
+        text: 'Browser market shares. January, 2015 to May, 2015'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            dataLabels: {
+                enabled: true,
+                format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                style: {
+                    color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                },
+                connectorColor: 'silver'
+            }
+        }
+    },
+    series: [{
+        name: 'Brands',
+        data: [
+            { name: 'IE', y: 56.33 },
+            {
+                name: 'Chrome',
+                y: 24.03,
+                sliced: true,
+                selected: true
+            },
+            { name: 'Firefox', y: 10.38 },
+            { name: 'Safari', y: 4.77 },
+            { name: 'Opera', y: 0.91 },
+            { name: 'Other', y: 0.2 }
+        ]
+    }]
 }
