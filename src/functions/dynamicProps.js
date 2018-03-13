@@ -13,7 +13,9 @@ export const buildXAxis = (xAxis, data, drill ) => {
         } }
         : {
             xAxis : {
-                type: 'category'
+                type: 'category',
+                tickInterval: 1,
+                title: { rotation: 90 }
             }
         };
 };
@@ -25,7 +27,8 @@ export const buildChartType = (type, polar ) => {
             type,
             plotBackgroundColor: null,
             plotBorderWidth: null,
-            plotShadow: false
+            plotShadow: false,
+            height: 600
         };
     } else {
         return {
@@ -42,7 +45,7 @@ export const buildPlotOptions  = (type) => {
                 borderWidth: 0,
                 dataLabels: {
                     enabled: true,
-                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                    format: '<b>{point.name}</b>: {point.percentage:.1f}',
                     style: {
                         direction: 'rtl',
                         color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
@@ -62,9 +65,12 @@ export const buildPlotOptions  = (type) => {
                     enabled: true,
                     format: '<b>{point.name}</b>: {point.percentage:.1f} %',
                     style: {
-                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-                    }
-                },
+                        color: 'black !important',
+                        direction: 'rtl',
+                        fill: 'black !important',
+                    },
+                    useHTML: true,
+                }
             }
         }
     }
@@ -114,7 +120,8 @@ export const buildTooltip = R.cond([
     } })],
     [R.equals('pie'), R.always({ tooltip: {
         useHTML: true,
-        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>',
+        style: { direction: 'rtl' }
     } })],
     [R.equals('column'), R.always({ tooltip: {
         headerFormat: '<div style="width:100%;border:1px solid #aaa";><div style="font-size:10px;font-weight:bold;padding-right:5px;text-align: right;">{point.y:,.1f}</div></div>',
@@ -132,6 +139,6 @@ export const buildTooltip = R.cond([
     } })],
     [R.equals('drilldown'), R.always({ tooltip: {
         headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-        pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+        pointFormat: '<span style="color:{point.color};direction=rtl;float=right">{point.name}</span>: <b>{point.y:.2f}</b> <br/>'
     } })]
 ]);

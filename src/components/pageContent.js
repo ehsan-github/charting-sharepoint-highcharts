@@ -18,30 +18,30 @@ export default function PageContent(parentId){
     let chartItems = window.CHART_ITEMS || [];
     let dataSource = window.DATA_SOURCE  || '';
 
-    let address = window.ADDRESS || 'GetWeeklyOperation,null,null,null';
+    // let address = window.ADDRESS || 'GetWeeklyOperation,null,null,null';
     // let address = window.ADDRESS || 'GetStatusPC,null,null,null,null';
-    let chartType = window.CHART_TYPE || 'pie';
-    let yAxis = window.Y_AXIS || 'NetworkFinal' ||
-        [
-            { name: 'ContractID', dispName: 'سیب', type: 'line' },
-            { name: 'Flag', type: 'line', index: 1 }
-        ] || [
-            { name: 'تیر 96', type: 'column' },
-            { name: 'اردیبهشت 96', type: 'column' },
-            { name: 'مهر96', type: 'column' },
-            { name: 'خرداد 96', type: 'line', index: 1 },
-            { name: 'آبان 96', type: 'line', index: 1 },
-        ];
-    let { xAxis, drill = null } = window.X_AXIS || { xAxis: 'ContractName' };
-    let filterItems = window.FILTER_ITEMS || [
-        { name: 'Status', dispName: 'وضعیت', multi: false },
-    ];
+    // let chartType = window.CHART_TYPE || 'drilldown';
+    // let yAxis = window.Y_AXIS || 'NetworkFinal' ||
+    //     [
+    //         { name: 'ContractID', dispName: 'سیب', type: 'line' },
+    //         { name: 'Flag', type: 'line', index: 1 }
+    //     ] || [
+    //         { name: 'تیر 96', type: 'column' },
+    //         { name: 'اردیبهشت 96', type: 'column' },
+    //         { name: 'مهر96', type: 'column' },
+    //         { name: 'خرداد 96', type: 'line', index: 1 },
+    //         { name: 'آبان 96', type: 'line', index: 1 },
+    //     ];
+    // let { xAxis, drill = null, aggFunc = 'Sum' } = { xAxis: 'ContractName', drill: 'Area', aggFunc: 'Sum' };
+    // let filterItems = window.FILTER_ITEMS || [
+    //     { name: 'Status', dispName: 'وضعیت', multi: false },
+    // ];
 
-    // let address = window.ADDRESS || '';
-    // let chartType = window.CHART_TYPE || 'column';
-    // let yAxis = window.Y_AXIS || [];
-    // let xAxis = window.X_AXIS || '';
-    // let filterItems = window.FILTER_ITEMS || [];
+    let address = window.ADDRESS || '';
+    let chartType = window.CHART_TYPE || 'column';
+    let yAxis = window.Y_AXIS || [];
+    let { xAxis, drill = null, aggFunc = 'Sum' } = window.X_AXIS || {};
+    let filterItems = window.FILTER_ITEMS || [];
 
     let legend = window.LEGEND || null ;
     let renamings = window.RENAMINGS || {};
@@ -52,8 +52,8 @@ export default function PageContent(parentId){
 
     let setItems = items => {
         chartItems = stringReplacement(renamings, items);
-        let { chartSeries } = buildChartData(legend, filters, yAxis, xAxis, chartItems, drill, chartType);
-        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartItems);
+        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems, drill, aggFunc, chartType);
+        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartData);
         xAxisProps = buildXAxis(xAxis, chartItems, drill);
         chartBuilder(app, chartType, { series: chartSeries }, drillDown, xAxisProps);
         filters = buildFilters(filterItems);
@@ -83,8 +83,8 @@ export default function PageContent(parentId){
     let changeFilter = ({ name, value }) => {
         let index = R.findIndex(R.propEq('name', name), filters);
         filters[index] = R.assoc('value', value, filters[index]);
-        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems, drill, chartType);
-        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartItems);
+        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems, drill, aggFunc, chartType);
+        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartData);
         xAxisProps = buildXAxis(xAxis, chartData, drill);
         chartBuilder(app, chartType, { series: chartSeries }, drillDown, xAxisProps);
     };
@@ -95,8 +95,8 @@ export default function PageContent(parentId){
     let changeMultiFilter = ({ name, value }) => {
         let index = R.findIndex(R.propEq('name', name), filters);
         filters[index] = R.assoc('value', value, filters[index]);
-        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems, drill, chartType);
-        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartItems);
+        let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems, drill, aggFunc, chartType);
+        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartData);
         xAxisProps = buildXAxis(xAxis, chartData, drill);
         chartBuilder(app, chartType, { series: chartSeries }, drillDown, xAxisProps);
     };
@@ -136,13 +136,13 @@ const buildFilters = R.map(x => {
     return multi ? { name, value: [] } : { name, value: '' };
 });
 
-const buildChartData = (legend, filters, yAxis, xAxis, data, drill, type) => {
+const buildChartData = (legend, filters, yAxis, xAxis, data, drill, aggFunc, type) => {
     let chartData = reduceFilters(filters, xAxis, yAxis)(data);
     if(type == 'pie') {
         let data = R.pipe(
             R.groupBy(R.prop(xAxis)),
             R.map(R.map(R.prop(yAxis))),
-            R.map(R.sum),
+            R.map(computeAggFunc(aggFunc)),
             R.mapObjIndexed((value, name)=> {
                 return {
                     name,
@@ -187,7 +187,7 @@ const buildChartData = (legend, filters, yAxis, xAxis, data, drill, type) => {
             let data = R.pipe(
                 R.groupBy(R.prop(drill)),
                 R.map(R.map(R.prop(yAxis))),
-                R.map(R.sum),
+                R.map(computeAggFunc(aggFunc)),
                 R.mapObjIndexed((value, name)=> {
                     return {
                         name,
@@ -279,7 +279,7 @@ const buildDrilldown = (xAxis, drill, yAxis, chartData) => {
                         return {
                             name,
                             id: name,
-                            data: R.map(x => [R.prop(xAxis, x), R.prop(yAxis, x)], value)
+                            data: R.map(R.props([xAxis, yAxis]), value)
                         };
                     }),
                     R.values
@@ -287,3 +287,13 @@ const buildDrilldown = (xAxis, drill, yAxis, chartData) => {
             }
         };
 }
+
+const computeAggFunc = R.cond([
+    [R.equals('Sum'), R.always(R.sum)],
+    [R.equals('Avg'), R.always(R.mean)],
+    [R.equals('Multi'), R.always(R.product)],
+    [R.equals('Min'), R.always(R.reduce(R.min, Number.MAX_SAFE_INTEGER))],
+    [R.equals('Max'), R.always(R.reduce(R.max, Number.MIN_SAFE_INTEGER))],
+    [R.equals('Count'), R.always(R.length)],
+    [R.T, R.always(R.sum)],
+])
