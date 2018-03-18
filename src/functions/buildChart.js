@@ -6,6 +6,7 @@ import HighchartsMore from 'highcharts-more';
 import * as R from 'ramda';
 import { setTitle, setSubTitle } from './staticProps';
 import { buildTooltip, buildYAxis, buildPlotOptions, buildChartType } from './dynamicProps';
+import { COLORS } from '../constants'
 
 data(Highcharts);
 Exporting(Highcharts);
@@ -26,6 +27,8 @@ export default function buildChart(app, type, series, drillDown, ...x){
         type = 'line';
     } else if (type == 'drilldown'){
         type = 'column';
+    } else if (type == 'donut'){
+        type = 'pie';
     }
 
     let chart = buildChartType(type, polar);
@@ -50,14 +53,14 @@ export default function buildChart(app, type, series, drillDown, ...x){
         enabled: true
     };
 
-    let plotOptions = buildPlotOptions(type);
+    let plotOptions = buildPlotOptions(type, window.SHOW_LEGEND);
 
     let remaining = {
         chart,
         yAxis,
         legend,
         plotOptions,
-        colors: ['#64B5F6', '#E57373', '#81C784 ', '#FFD54F', '#9575CD', '#4DD0E1', '#F0B27A', '#F0B27A', '#D35400', '#99FFFF', '#669966', '#F5B041', '#99A3A4', '#FFCCBC', '#9FA8DA']
+        colors: COLORS
     };
 
     // merge all chat props together

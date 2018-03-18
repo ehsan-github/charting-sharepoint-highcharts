@@ -1,5 +1,6 @@
 import '../assets/global.css';
 import * as R from 'ramda';
+import Highcharts from 'highcharts';
 // import update from '../updates';
 import { getSpItems, getAddressItems } from '../api';
 
@@ -11,6 +12,8 @@ import MultiSelectFilter from './MultiSelectFilter';
 import { buildXAxis } from '../functions/dynamicProps';
 import Elem from '../elements/Element';
 
+import { COLORS } from '../constants/index'
+
 export default function PageContent(parentId){
     let app = document.getElementById(parentId);
     // let myChart = null;
@@ -20,28 +23,28 @@ export default function PageContent(parentId){
 
     // let address = window.ADDRESS || 'GetWeeklyOperation,null,null,null';
     // let address = window.ADDRESS || 'GetStatusPC,null,null,null,null';
-    // let chartType = window.CHART_TYPE || 'drilldown';
-    // let yAxis = window.Y_AXIS || 'NetworkFinal' ||
-    //     [
-    //         { name: 'ContractID', dispName: 'سیب', type: 'line' },
-    //         { name: 'Flag', type: 'line', index: 1 }
-    //     ] || [
-    //         { name: 'تیر 96', type: 'column' },
-    //         { name: 'اردیبهشت 96', type: 'column' },
-    //         { name: 'مهر96', type: 'column' },
-    //         { name: 'خرداد 96', type: 'line', index: 1 },
-    //         { name: 'آبان 96', type: 'line', index: 1 },
-    //     ];
-    // let { xAxis, drill = null, aggFunc = 'Sum' } = { xAxis: 'ContractName', drill: 'Area', aggFunc: 'Sum' };
-    // let filterItems = window.FILTER_ITEMS || [
-    //     { name: 'Status', dispName: 'وضعیت', multi: false },
-    // ];
+    let chartType = window.CHART_TYPE || 'donut';
+    let yAxis = window.Y_AXIS || 'NetworkFinal' ||
+        [
+            { name: 'ContractID', dispName: 'سیب', type: 'line' },
+            { name: 'Flag', type: 'line', index: 1 }
+        ] || [
+            { name: 'تیر 96', type: 'column' },
+            { name: 'اردیبهشت 96', type: 'column' },
+            { name: 'مهر96', type: 'column' },
+            { name: 'خرداد 96', type: 'line', index: 1 },
+            { name: 'آبان 96', type: 'line', index: 1 },
+        ];
+    let { xAxis, drill = null, aggFunc = 'Sum' } = { xAxis: 'ContractName', drill: 'Area', aggFunc: 'Sum' };
+    let filterItems = window.FILTER_ITEMS || [
+        { name: 'Status', dispName: 'وضعیت', multi: false },
+    ];
 
     let address = window.ADDRESS || '';
-    let chartType = window.CHART_TYPE || 'column';
-    let yAxis = window.Y_AXIS || [];
-    let { xAxis, drill = null, aggFunc = 'Sum' } = window.X_AXIS || {};
-    let filterItems = window.FILTER_ITEMS || [];
+    // let chartType = window.CHART_TYPE || 'column';
+    // let yAxis = window.Y_AXIS || [];
+    // let { xAxis, drill = null, aggFunc = 'Sum' } = window.X_AXIS || {};
+    // let filterItems = window.FILTER_ITEMS || [];
 
     let legend = window.LEGEND || null ;
     let renamings = window.RENAMINGS || {};
@@ -53,7 +56,7 @@ export default function PageContent(parentId){
     let setItems = items => {
         chartItems = stringReplacement(renamings, items);
         let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems, drill, aggFunc, chartType);
-        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartData);
+        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartData, chartType);
         xAxisProps = buildXAxis(xAxis, chartItems, drill);
         chartBuilder(app, chartType, { series: chartSeries }, drillDown, xAxisProps);
         filters = buildFilters(filterItems);
@@ -84,7 +87,7 @@ export default function PageContent(parentId){
         let index = R.findIndex(R.propEq('name', name), filters);
         filters[index] = R.assoc('value', value, filters[index]);
         let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems, drill, aggFunc, chartType);
-        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartData);
+        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartData, chartType);
         xAxisProps = buildXAxis(xAxis, chartData, drill);
         chartBuilder(app, chartType, { series: chartSeries }, drillDown, xAxisProps);
     };
@@ -96,7 +99,7 @@ export default function PageContent(parentId){
         let index = R.findIndex(R.propEq('name', name), filters);
         filters[index] = R.assoc('value', value, filters[index]);
         let { chartSeries, chartData } = buildChartData(legend, filters, yAxis, xAxis, chartItems, drill, aggFunc, chartType);
-        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartData);
+        let drillDown = buildDrilldown(xAxis, drill, yAxis, chartData, chartType);
         xAxisProps = buildXAxis(xAxis, chartData, drill);
         chartBuilder(app, chartType, { series: chartSeries }, drillDown, xAxisProps);
     };
@@ -159,6 +162,60 @@ const buildChartData = (legend, filters, yAxis, xAxis, data, drill, aggFunc, typ
             }],
             chartData
         };
+    } else if (type == 'donut') {
+        let firstSery = R.pipe(
+            R.groupBy(R.prop(drill)),
+            R.map(R.map(R.prop(yAxis))),
+            R.map(R.sum),
+            R.mapObjIndexed((val, key)=> { return { name: key, y: val } }),
+            R.values,
+            arr => arr.map((value, index) => R.assoc('color', COLORS[index], value))
+        )(chartData)
+
+        let secondSery = R.pipe(
+            R.groupBy(R.prop(drill)),
+            R.values,
+            R.map(R.map(x => { return { name: x[xAxis], y: x[yAxis] } })),
+            arrs => arrs.map((val0, i0)=> val0.map(
+                (val1, i1)=> {
+                    let drillDataLen = val0.length;
+                    let brightness = 0.2 - (i1 / drillDataLen) / 5;
+
+                    return R.assoc(
+                        'color',
+                        Highcharts.Color(COLORS[i0]).brighten(brightness).get(),
+                        val1)
+                })),
+            R.reduce(R.concat, [])
+        )(chartData)
+
+        return {
+            chartSeries: [{
+                name: drill,
+                data: firstSery,
+                size: '60%',
+                dataLabels: {
+                    formatter: function () {
+                        return this.y > 5 ? this.point.name : null;
+                    },
+                    color: '#ffffff',
+                    distance: -30
+                }
+            }, {
+                name: xAxis,
+                data: secondSery,
+                size: '80%',
+                innerSize: '60%',
+                dataLabels: {
+                    formatter: function () {
+                        // display only if larger than 1
+                        return this.y > 1 ? '<b>' + this.point.name + ':</b> ' +
+                            this.y + '%' : null;
+                    }
+                }
+            }],
+            chartData
+        }
     } else {
         if (!drill) {
             if (typeof yAxis == 'string') {
@@ -266,8 +323,8 @@ const stringReplacement = (replacements, data) => R.map(
     R.map(value => R.propOr(value, value, replacements)),
     data);
 
-const buildDrilldown = (xAxis, drill, yAxis, chartData) => {
-    return (!drill)
+const buildDrilldown = (xAxis, drill, yAxis, chartData, chartType) => {
+    return (chartType !== 'drilldown')
         ? {}
         : {
             drilldown: {
@@ -297,3 +354,5 @@ const computeAggFunc = R.cond([
     [R.equals('Count'), R.always(R.length)],
     [R.T, R.always(R.sum)],
 ])
+
+// const item = { 'AreaID': 1, 'Area': 'دز و کارون', 'ContractID': 255, 'ContractName': '2000 هکتاری اندیمشک', 'Status': 'جاری', 'NetworkFinal': 2029.0, 'DrainageFinal': 0.0, 'EquippedFinal': 0.0, 'ReadyNetwork': 2143.0, 'ReadyDrainage': 0.0, 'ReadyEquipped': 0.0, 'NetworkDoc': 2235.0, 'DraindDoc': 0.0, 'EquipDoc': 0.0, 'CountTemp': 2, 'NetworkDelivered': 2143.0, 'DrainDelivered': 0.0, 'EquippedDelivered': 0.0, 'CountTempDate': 2, 'NetworkDelivered2': 2143.0, 'DrainDelivered2': 0.0, 'EquippedDelivered2': 0.0, 'CountTemp3': null, 'NetworkDelivered3': 0.0, 'DrainDelivered3': 0.0, 'EquippedDelivered3': 0.0, 'NetworkRemove': 0.0, 'DrainRemove': 0.0, 'EquippedRemove': 0.0, 'NetworkFinalDeliver': 0.0, 'DrainFinalDeliver': 0.0, 'EquippedFinalDeliver': 0.0 }

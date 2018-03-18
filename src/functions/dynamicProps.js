@@ -38,7 +38,7 @@ export const buildChartType = (type, polar ) => {
     }
 }
 
-export const buildPlotOptions  = (type) => {
+export const buildPlotOptions  = (type, showInLegend) => {
     if (type == 'drilldown') {
         return {
             series: {
@@ -60,6 +60,7 @@ export const buildPlotOptions  = (type) => {
 
             pie: {
                 allowPointSelect: true,
+                showInLegend,
                 cursor: 'pointer',
                 dataLabels: {
                     enabled: true,
@@ -138,7 +139,15 @@ export const buildTooltip = R.cond([
         style: { direction: 'rtl' }
     } })],
     [R.equals('drilldown'), R.always({ tooltip: {
+        useHTML: true,
         headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
         pointFormat: '<span style="color:{point.color};direction=rtl;float=right">{point.name}</span>: <b>{point.y:.2f}</b> <br/>'
-    } })]
+    } })],
+    [R.equals(''), R.always({ tooltip: {
+        headerFormat: '<div style="width:100%;border:1px solid #aaa"><div style="font-size:10px;font-weight:bold;padding-left:30%">{point.y:,.1f}</div></div><table>',
+        pointFormat: '<div><span style="float:left;">{series.name}: </span><div style="text-align: left;direction: ltr;float:left;">{point.y:,.1f}</div></div>',
+        valueSuffix: '',
+        useHTML: true,
+        style: { direction: 'rtl' }
+    } })],
 ]);
