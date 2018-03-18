@@ -23,28 +23,28 @@ export default function PageContent(parentId){
 
     // let address = window.ADDRESS || 'GetWeeklyOperation,null,null,null';
     // let address = window.ADDRESS || 'GetStatusPC,null,null,null,null';
-    let chartType = window.CHART_TYPE || 'donut';
-    let yAxis = window.Y_AXIS || 'NetworkFinal' ||
-        [
-            { name: 'ContractID', dispName: 'سیب', type: 'line' },
-            { name: 'Flag', type: 'line', index: 1 }
-        ] || [
-            { name: 'تیر 96', type: 'column' },
-            { name: 'اردیبهشت 96', type: 'column' },
-            { name: 'مهر96', type: 'column' },
-            { name: 'خرداد 96', type: 'line', index: 1 },
-            { name: 'آبان 96', type: 'line', index: 1 },
-        ];
-    let { xAxis, drill = null, aggFunc = 'Sum' } = { xAxis: 'ContractName', drill: 'Area', aggFunc: 'Sum' };
-    let filterItems = window.FILTER_ITEMS || [
-        { name: 'Status', dispName: 'وضعیت', multi: false },
-    ];
+    // let chartType = window.CHART_TYPE || 'donut';
+    // let yAxis = window.Y_AXIS || 'NetworkFinal' ||
+    //     [
+    //         { name: 'ContractID', dispName: 'سیب', type: 'line' },
+    //         { name: 'Flag', type: 'line', index: 1 }
+    //     ] || [
+    //         { name: 'تیر 96', type: 'column' },
+    //         { name: 'اردیبهشت 96', type: 'column' },
+    //         { name: 'مهر96', type: 'column' },
+    //         { name: 'خرداد 96', type: 'line', index: 1 },
+    //         { name: 'آبان 96', type: 'line', index: 1 },
+    //     ];
+    // let { xAxis, drill = null, aggFunc = 'Sum' } = { xAxis: 'ContractName', drill: 'Area', aggFunc: 'Sum' };
+    // let filterItems = window.FILTER_ITEMS || [
+    //     { name: 'Status', dispName: 'وضعیت', multi: false },
+    // ];
 
     let address = window.ADDRESS || '';
-    // let chartType = window.CHART_TYPE || 'column';
-    // let yAxis = window.Y_AXIS || [];
-    // let { xAxis, drill = null, aggFunc = 'Sum' } = window.X_AXIS || {};
-    // let filterItems = window.FILTER_ITEMS || [];
+    let chartType = window.CHART_TYPE || 'column';
+    let yAxis = window.Y_AXIS || [];
+    let { xAxis, drill = null, aggFunc = 'Sum' } = window.X_AXIS || {};
+    let filterItems = window.FILTER_ITEMS || [];
 
     let legend = window.LEGEND || null ;
     let renamings = window.RENAMINGS || {};
